@@ -251,17 +251,17 @@ function getMessage(m) {
 
 function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animationspeed) {
 
-    var template = '<div id={id} class="card {colour}" style="width:250px;position:absolute;">' +
+    var template = '<div id={id} class="card draggable {colour}" style="width:250px;position:absolute;">' +
                        '<div class="card-content white-text">' +
                             '<textarea class="content black-text">{text}</textarea>' +
                        '</div>' +
-                       '<div class="dock-container">' + 
-                            '<div class="card-action valign-wrapper">' +
-                                '<a href="#" class="thumb-up black-text"><i class="material-icons">thumb_up</i></a>' +
-                                '<a class="thumb-up-count valign black-text">{thumb-up-count}</a>' +
-                                '<a href="#" class="delete-card valign black-text">DEL</a>' +
-                            '</div>' +
-                        '</div>' + 
+                       '<div class="dock-container droppable">' + 
+                       '</div>' + 
+                        '<div class="card-action valign-wrapper">' +
+                            '<a href="#" class="thumb-up black-text"><i class="material-icons">thumb_up</i></a>' +
+                            '<a class="thumb-up-count valign black-text">{thumb-up-count}</a>' +
+                            '<a href="#" class="delete-card valign black-text">DEL</a>' +
+                        '</div>' +
                    '</div>';
     var h = '';
     template = template.replace('{id}', id);
@@ -280,6 +280,30 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
         scroll: true,
         stack: ".card",
 		handle: "div.card-content, div.card-action",
+    });
+
+    $(card).children(".droppable").droppable({
+        accept: ".draggable",
+        activeClass: "ui-state-hover",
+        hoverClass: "ui-state-active",
+        drop: function( event, ui ) {
+            element = ui.draggable;
+            elements = element.find(".card-action");
+            unchain = document.createElement('a');
+            $(unchain).addClass("unchain-card")
+                .addClass("valign")
+                .addClass("black-text")
+                .html("解除")
+                .attr('href', '#')
+                .appendTo(elements[0]) //main div
+            .click(function () {
+                $(this).remove();
+            });
+            element.draggable( 'disable' );
+            console.log(this);
+            element.appendTo($(this));
+            element.css('position', 'static');
+        }
     });
 
     //After a drag:
