@@ -286,6 +286,8 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
         accept: ".draggable",
         activeClass: "ui-state-hover",
         hoverClass: "ui-state-active",
+        tolerance: "pointer",
+        greedy: true,
         drop: function( event, ui ) {
             element = ui.draggable;
             elements = element.find(".card-action");
@@ -303,6 +305,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
             console.log(this);
             element.appendTo($(this));
             element.css('position', 'static');
+            element.addClass('child-card');
         }
     });
 
