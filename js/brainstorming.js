@@ -251,7 +251,8 @@ function getMessage(m) {
 
 function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animationspeed) {
 
-    var template = '<div id={id} class="card draggable {colour}" style="width:250px;position:absolute;">' +
+    var template = '<div id={id} class="card savable-card draggable {colour}" ' +
+                    'data-id="{id}" data-color="{colour}" style="width:250px;position:absolute;">' +
                        '<div class="card-content white-text">' +
                             '<textarea class="content black-text">{text}</textarea>' +
                        '</div>' +
@@ -290,19 +291,19 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
             element = ui.draggable;
             elements = element.find(".card-action");
             unchain = document.createElement('a');
+            console.log($(this));
             $(unchain).addClass("unchain-card")
                 .addClass("valign")
                 .addClass("black-text")
                 .html("解除")
                 .attr('href', '#')
                 .appendTo(elements[0]) //main div
-            .click(function () {
-                $(this).remove();
-            });
+            .click(onUnchainClicked());
             element.draggable( 'disable' );
             console.log(this);
             element.appendTo($(this));
             element.css('position', 'static');
+            element.data('parent', $(this).id);
         }
     });
 
@@ -388,6 +389,14 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
         event: 'dblclick', //event: 'mouseover'
     });
 
+}
+
+function onUnchainClicked() {
+    var my_card = $(this).closest('.card');
+    var parent_card = my_card.closest('.card');
+    my_card.removeData('parent-id');
+    my_card.appendTo('.boundary');
+    parent_card.remove('#' + my_card.id);
 }
 
 function onCardChange(id, text) {
@@ -482,3 +491,7 @@ function showVal(newVal){
   $("#main-screen").css("zoom", (newVal * 100) + "%");
 }
 
+function getSaveElements() {
+    var elements = $('.savable-card');
+
+}
