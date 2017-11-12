@@ -2,6 +2,9 @@ var cards = {};
 var boardInitialized = false;
 var nickname = {name : "default"}
 var create_colour = 'grey';
+var droppable_layer = '<div class="dock-container droppable">' +
+'ドロップで子カードにできます' + 
+'</div>';
 
 $(document).ready( function(){
     $(".sticky-colour").click(function() {
@@ -249,15 +252,14 @@ function getMessage(m) {
 
 }
 
-function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animationspeed) {
+function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id, animationspeed) {
 
     var template = '<div id={id} class="card savable-card draggable {colour}" ' +
-                    'data-id="{id}" data-color="{colour}" style="width:250px;position:absolute;">' +
+                    'data-color="{colour}" data-parent-id="" style="width:250px;position:absolute;">' +
                        '<div class="card-content white-text">' +
-                            '<textarea class="content black-text">{text}</textarea>' +
+                            '<div class="content black-text description" ' +
+                            'data-type="textarea">{text}</div>' +
                        '</div>' +
-                       '<div class="dock-container droppable">' + 
-                       '</div>' + 
                         '<div class="card-action valign-wrapper">' +
                             '<a href="#" class="thumb-up black-text"><i class="material-icons">thumb_up</i></a>' +
                             '<a class="thumb-up-count valign black-text">{thumb-up-count}</a>' +
@@ -267,10 +269,12 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
     var h = '';
     template = template.replace('{id}', id);
     template = template.replace('{colour}', colour);
+    template = template.replace('{colour}', colour);
     template = template.replace('{text}', text);
     template = template.replace('{thumb-up-count}', vote_count);
     h = template;
 
+    console.log(template);
     var card = $(h);
     card.appendTo('.boundary');
 
@@ -280,38 +284,10 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
         containment: '.boundary',
         scroll: true,
         stack: ".card",
+        opacity: 0.80,
 		handle: "div.card-content, div.card-action",
     });
-
-    $(card).children(".droppable").droppable({
-        accept: ".draggable",
-        activeClass: "ui-state-hover",
-        hoverClass: "ui-state-active",
-        tolerance: "pointer",
-        greedy: true,
-        drop: function( event, ui ) {
-            element = ui.draggable;
-            elements = element.find(".card-action");
-            unchain = document.createElement('a');
-            console.log($(this));
-            $(unchain).addClass("unchain-card")
-                .addClass("valign")
-                .addClass("black-text")
-                .html("解除")
-                .attr('href', '#')
-                .appendTo(elements[0]) //main div
-            .click(onUnchainClicked());
-            element.draggable( 'disable' );
-            console.log(this);
-            element.appendTo($(this));
-            element.css('position', 'static');
-<<<<<<< HEAD
-            element.data('parent', $(this).id);
-=======
-            element.addClass('child-card');
->>>>>>> 33d5a039ed31e567937b763e6db9afa5a7e4221c
-        }
-    });
+    addDroppableDiv(card.children('.card-action'));
 
     //After a drag:
     card.bind("dragstop", function(event, ui) {
@@ -345,14 +321,11 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
         function() {
             $(this).addClass('hover');
             $(this).children('.card-icon').fadeIn(10);
-            zindex = $(this).css('z-index');
-            $(this).css('z-index', 10000);
 
         },
         function() {
             $(this).removeClass('hover');
             $(this).children('.card-icon').fadeOut(150);
-            $(this).css('z-index', zindex);
         }
     );
 
@@ -380,29 +353,22 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, animation
             sendAction('voteUp', {'id': id, 'thumb-up-count': thumb_up_count});
         }
     );
-
-    card.children('.card-content').children('.content').editable(function(value, settings) {
-        onCardChange(id, value);
-        return (value);
-        //return (value);
-    }, {
+    card.children('.card-content').children('.content').editable({
         type: 'textarea',
         //submit: 'OK',
-        style: 'inherit',
-        cssclass: 'card-edit-form',
-        placeholder: 'Double Click to Edit.',
+        mode: 'inline',
         onblur: 'submit',
-        event: 'dblclick', //event: 'mouseover'
+        emptytext: '入力してください。',
+        success: function(response, newValue) {
+            onCardChange(id, newValue);
+        }
     });
 
-}
-
-function onUnchainClicked() {
-    var my_card = $(this).closest('.card');
-    var parent_card = my_card.closest('.card');
-    my_card.removeData('parent-id');
-    my_card.appendTo('.boundary');
-    parent_card.remove('#' + my_card.id);
+    if (parent_id) {
+        var parent = $('#' + parent_id).children('.dock-container').last();
+        console.log(parent);
+        makeCardChild(parent, card);
+    }
 }
 
 function onCardChange(id, text) {
@@ -419,6 +385,55 @@ function moveCard(card, position) {
     }, 500);
 }
 
+function makeCardChild(parent, card) {
+    elements = card.find(".card-action");
+    unchain = document.createElement('a');
+
+    console.log(parent);
+    $(unchain).addClass("unchain-card")
+        .addClass("valign")
+        .addClass("black-text")
+        .html("解除")
+        .attr('href', '#')
+        .appendTo(elements[0]) //main div
+    .click(function() {
+        var my_card = this.closest('.card');
+        var parent_card = $(my_card).parent().closest('.card');
+        
+        $.removeData(my_card, 'parent-id');
+        $(my_card).draggable('enable');
+        $(my_card).appendTo('.boundary');
+        $(my_card).find('.unchain-card').remove();
+        $(my_card).css('position', 'absolute');
+        $(my_card).removeClass('child-card');
+        $(parent_card).remove('#' + $(my_card).attr('id'));
+        
+    });
+    card.draggable( 'disable' );
+    $(parent).after(card);
+    //card.appendTo($(parent));
+    card.css('position', 'static');
+    card.data('parent-id', $(parent).closest('.card').attr("id"));
+    card.addClass('child-card');
+
+    addDroppableDiv(card);
+}
+
+function addDroppableDiv(targetAfter) {
+    $(targetAfter).after($(droppable_layer));
+    
+    $(targetAfter).parent().children(".droppable").droppable({
+        accept: ".draggable",
+        activeClass: "ui-state-active",
+        hoverClass: "ui-state-highlight",
+        tolerance: "pointer",
+        greedy: true,
+        drop: function( event, ui ) {
+            element = ui.draggable;
+            makeCardChild($(this), element);
+        }
+    });
+}
 
 //----------------------------------
 // cards
@@ -497,7 +512,48 @@ function showVal(newVal){
   $("#main-screen").css("zoom", (newVal * 100) + "%");
 }
 
-function getSaveElements() {
-    var elements = $('.savable-card');
+function save() {
+    var elem = getSaveElements();
+    localStorage.setItem("dataset", JSON.stringify(elem));
+}
 
+function load() {
+    var item = localStorage.getItem("dataset");
+    var data = JSON.parse(item);
+    if (!data) {
+        return;
+    }
+
+    $('.boundary').text('');
+    Object.keys(data).forEach(function (key) {
+        var elem = data[key];
+        drawNewCard(elem.id,
+            elem.text, // text
+            elem.left, 
+            elem.top,
+            0, // rotation,
+            elem.color,
+            null,
+            0,
+            elem.parent_id,
+            0);
+    });
+}
+
+function getSaveElements() {
+    var savedElement = {};
+    $('.savable-card').each(function(idx, elem){
+        console.log(elem);
+        savedElement[$(elem).attr('id')] = {
+            'id': $(elem).attr('id'),
+            'order': idx,
+            'color': $(elem).data('color'),
+            'text': $(elem).find('.description').first().text(),
+            'parent_id': $(elem).data('parent-id'),
+            'top': $(elem).css('top').replace('px',''),
+            'left': $(elem).css('left').replace('px',''),
+            'width': $(elem).css('width').replace('px',''),
+        };
+    });
+    return savedElement;
 }

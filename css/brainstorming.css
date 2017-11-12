@@ -1,9 +1,24 @@
 
 .droppable {
-	min-height: 10px;
 	margin: 5px 0 5px 0;
+	height: 0px;
+	-webkit-transition: all 0.3s ease;
+	-moz-transition: all 0.3s ease;
+	transition: all 0.3s ease;
+	overflow: hidden;
 }
 
 .child-card {
 	margin: 0 0 0 10px;
+}
+
+
+.ui-state-active {
+	height: 30px;
+}
+.ui-state-highlight {
+	height: 30px;
+}
+.ui-draggable-dragging {
+	z-index: 100000;
 }
