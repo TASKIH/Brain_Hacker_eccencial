@@ -2,7 +2,7 @@ var cards = {};
 var boardInitialized = false;
 var nickname = {name : "default"}
 var create_colour = 'grey';
-var droppable_layer = '<div class="dock-container droppable">' +
+var droppable_layer = '<div class="dock-container droppable" id="{droppable_id}">' +
 'ドロップで子カードにできます' + 
 '</div>';
 
@@ -78,7 +78,6 @@ $(document).ready( function(){
         //$("#main-container").css("padding-left","480px");
     });
 
-    initCards([]);
 });
 
 function sendAction(a, d) {
@@ -165,35 +164,8 @@ function getMessage(m) {
     console.log(data);
 
     switch (action) {
-        case 'chat':
-            var template = '<a href="#"><b>{name}</b>： {text}</a>';
-            template = template.replace('{name}', data['name']);
-            template = template.replace('{text}', data['body']);
-            var message = $(template);
-            message.appendTo('#chat-box');
-            break;
-
-        case 'chatMessages':
-            nickname.name = data.name;
-            var template = '<a href="#"><b>{name}</b>： {text}</a>';
-            for (var i = 0; i < data.cache.length; i++) {
-                template = template.replace('{name}', data.cache[i]['name']);
-                template = template.replace('{text}', data.cache[i]['body']);
-                var message = $(template);
-                message.appendTo('#chat-box');
-            }
-            break;
-
-        case 'roomAccept':
-            sendAction('initializeMe', null);
-            break;
-
         case 'moveCard':
-            moveCard($("#" + data.id), data.position);
-            break;
-
-        case 'initCards':
-            initCards(data);
+            //moveCard($("#" + data.id), data.position);
             break;
 
         case 'createCard':
@@ -215,33 +187,6 @@ function getMessage(m) {
 
         case 'voteUp':
             $('#' + data.id + ' .thumb-up-count').html('+' + data['thumb-up-count']);
-            break;
-
-        case 'advice':
-        Lobibox.notify('info', {
-               msg: data['sent'],
-               title: 'ちょっと一言',
-               //img: "../images/avatar.png",
-               img: "https://avatars1.githubusercontent.com/u/6737785?v=3&s=460",
-               position: 'bottom left',
-               delay: 5000,
-               sound: false
-               }
-            );
-            break;
-
-        case 'countUser':
-        	$(".count-user").text('参加者： ' + data + '人');
-            break;
-
-        case 'getMember':
-            var embed_html = '';
-            template = '<li class="valign-wrapper white-text"><i class="material-icons">perm_identity</i><span class="valign">{name}</span></li>';
-            for (var i=0; i<data.length; i++) {
-                embed_html += template.replace('{name}', data[i]);
-            }
-
-            $('#member_div').html(embed_html);
             break;
 
         default:
@@ -396,19 +341,19 @@ function makeCardChild(parent, card) {
         .html("解除")
         .attr('href', '#')
         .appendTo(elements[0]) //main div
-    .click(function() {
-        var my_card = this.closest('.card');
-        var parent_card = $(my_card).parent().closest('.card');
-        
-        $.removeData(my_card, 'parent-id');
-        $(my_card).draggable('enable');
-        $(my_card).appendTo('.boundary');
-        $(my_card).find('.unchain-card').remove();
-        $(my_card).css('position', 'absolute');
-        $(my_card).removeClass('child-card');
-        $(parent_card).remove('#' + $(my_card).attr('id'));
-        
-    });
+        .click(function() {
+            var my_card = this.closest('.card');
+            var parent_card = $(my_card).parent().closest('.card');
+            
+            $.removeData(my_card, 'parent-id');
+            $(my_card).draggable('enable');
+            $(my_card).appendTo('.boundary');
+            $(my_card).find('.unchain-card').remove();
+            $(my_card).css('position', 'absolute');
+            $(my_card).removeClass('child-card');
+            $(parent_card).children('#' + $(my_card).attr('id')).remove();
+            $(parent_card).children('#' + $(my_card).attr('id')+'_droppable').remove();
+        });
     card.draggable( 'disable' );
     $(parent).after(card);
     //card.appendTo($(parent));
@@ -420,7 +365,8 @@ function makeCardChild(parent, card) {
 }
 
 function addDroppableDiv(targetAfter) {
-    $(targetAfter).after($(droppable_layer));
+    var droppable_cont_id = droppable_layer.replace('{droppable_id}', $(targetAfter).attr('id') + '_droppable');
+    $(targetAfter).after($(droppable_cont_id));
     
     $(targetAfter).parent().children(".droppable").droppable({
         accept: ".draggable",
@@ -454,36 +400,14 @@ function createCard(id, text, x, y, rot, colour, vote_count) {
     sendAction(action, data);
 }
 
-function initCards(cardArray) {
-    //first delete any cards that exist
-    $('.card').remove();
-
-    cards = cardArray;
-
-    for (var i in cardArray) {
-        card = cardArray[i];
-
-        drawNewCard(
-            card.id,
-            card.text,
-            card.x,
-            card.y,
-            card.rot,
-            card.colour,
-            card.sticker,
-            card.vote_count,
-            0
-        );
-    }
-
-    boardInitialized = true;
-    unblockUI();
-}
-
 $(function() {
 
-    if (boardInitialized === false)
+    if (boardInitialized === false) {        
         blockUI('<img src="images/ajax-loader.gif" width=43 height=11/>');
+        load();   
+        boardInitialized = true;
+        unblockUI();
+    }
 
 });
 
@@ -513,11 +437,17 @@ function showVal(newVal){
 }
 
 function save() {
+    blockUI();
+
     var elem = getSaveElements();
     localStorage.setItem("dataset", JSON.stringify(elem));
+    
+    unblockUI();
 }
 
 function load() {
+    blockUI();
+
     var item = localStorage.getItem("dataset");
     var data = JSON.parse(item);
     if (!data) {
@@ -525,6 +455,7 @@ function load() {
     }
 
     $('.boundary').text('');
+
     Object.keys(data).forEach(function (key) {
         var elem = data[key];
         drawNewCard(elem.id,
@@ -538,6 +469,8 @@ function load() {
             elem.parent_id,
             0);
     });
+    
+    unblockUI();
 }
 
 function getSaveElements() {
