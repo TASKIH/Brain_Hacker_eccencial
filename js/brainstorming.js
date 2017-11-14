@@ -3,6 +3,7 @@ var boardInitialized = false;
 var nickname = {name : "default"}
 var create_colour = 'grey';
 var droppable_layer = '<div class="dock-container droppable" id="{droppable_id}">' +
+'<i class="material-icons">arrow_drop_down</i>' + 
 'ドロップで子カードにできます' + 
 '</div>';
 
@@ -208,7 +209,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
                         '<div class="card-action valign-wrapper">' +
                             '<a href="#" class="thumb-up black-text"><i class="material-icons">thumb_up</i></a>' +
                             '<a class="thumb-up-count valign black-text">{thumb-up-count}</a>' +
-                            '<a href="#" class="delete-card valign black-text">DEL</a>' +
+                            '<a href="#" class="delete-card valign black-text"><i class="material-icons">delete</i></a>' +
                         '</div>' +
                    '</div>';
     var h = '';
