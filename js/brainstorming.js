@@ -231,6 +231,8 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
         scroll: true,
         stack: ".card",
         opacity: 0.80,
+        // necessary for changing height of droppable element.
+        refreshPositions: true,
 		handle: "div.card-content, div.card-action",
     });
     addDroppableDiv(card.children('.card-action'));

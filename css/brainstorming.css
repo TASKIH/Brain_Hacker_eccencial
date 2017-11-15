@@ -1,6 +1,8 @@
 
 .droppable {
+	opacity: 0;
 	margin: 5px 0 5px 0;
+	visibility: collapse;
 	height: 0px;
 	-webkit-transition: all 0.3s ease;
 	-moz-transition: all 0.3s ease;
@@ -14,10 +16,11 @@
 
 
 .ui-state-active {
+	opacity: 1.0;
 	height: 30px;
+	visibility: visible;
 }
 .ui-state-highlight {
-	height: 30px;
 }
 .ui-draggable-dragging {
 	z-index: 100000;
