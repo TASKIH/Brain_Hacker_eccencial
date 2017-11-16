@@ -203,8 +203,8 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
     var template = '<div id={id} class="card savable-card draggable {colour}" ' +
                     'data-color="{colour}" data-parent-id="" style="width:250px;position:absolute;">' +
                        '<div class="card-content white-text">' +
-                            '<div class="content black-text description" ' +
-                            'data-type="textarea">{text}</div>' +
+                            '<textarea class="content black-text description" ' +
+                            'data-type="textarea">{text}</textarea>' +
                        '</div>' +
                         '<div class="card-action valign-wrapper">' +
                             '<a href="#" class="thumb-up black-text"><i class="material-icons">thumb_up</i></a>' +
@@ -237,6 +237,9 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
     });
     addDroppableDiv(card.children('.card-action'));
 
+    card.resizable({
+        handles: 'e, w'
+    });
     //After a drag:
     card.bind("dragstop", function(event, ui) {
 
@@ -301,16 +304,18 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
             sendAction('voteUp', {'id': id, 'thumb-up-count': thumb_up_count});
         }
     );
+    /*
     card.children('.card-content').children('.content').editable({
         type: 'textarea',
         //submit: 'OK',
         mode: 'inline',
         onblur: 'submit',
+        rows: 10,
         emptytext: '入力してください。',
         success: function(response, newValue) {
             onCardChange(id, newValue);
         }
-    });
+    });*/
 
     if (parent_id) {
         var parent = $('#' + parent_id).children('.dock-container').last();
