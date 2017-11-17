@@ -79,6 +79,7 @@ $(document).ready( function(){
         //$("#main-container").css("padding-left","480px");
     });
 
+
 });
 
 function sendAction(a, d) {
@@ -203,7 +204,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
     var template = '<div id={id} class="card savable-card draggable {colour}" ' +
                     'data-color="{colour}" data-parent-id="" style="width:250px;position:absolute;">' +
                        '<div class="card-content white-text">' +
-                            '<textarea class="content black-text description" ' +
+                            '<textarea class="content black-text description expanding" ' +
                             'data-type="textarea">{text}</textarea>' +
                        '</div>' +
                         '<div class="card-action valign-wrapper">' +
@@ -236,6 +237,8 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
 		handle: "div.card-content, div.card-action",
     });
     addDroppableDiv(card.children('.card-action'));
+
+    card.find('.expanding').expanding();
 
     card.resizable({
         handles: 'e, w'
@@ -304,6 +307,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, vote_count, parent_id
             sendAction('voteUp', {'id': id, 'thumb-up-count': thumb_up_count});
         }
     );
+
     /*
     card.children('.card-content').children('.content').editable({
         type: 'textarea',
@@ -368,6 +372,7 @@ function makeCardChild(parent, card) {
     card.css('position', 'static');
     card.data('parent-id', $(parent).closest('.card').attr("id"));
     card.addClass('child-card');
+
 
     addDroppableDiv(card);
 }
