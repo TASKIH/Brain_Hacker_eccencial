@@ -78,7 +78,16 @@ $(document).ready( function(){
         //$("#main-screen").css("transform","scale(0.5, 0.5)");
         //$("#main-container").css("padding-left","480px");
     });
-
+    $('.boundary').on("dragover", function(e) {
+        $(this).addClass("ui-state-highlight");
+        $('.overlay').show();
+        e.stopPropagation();
+    })
+    $('.boundary').on("dragleave", function(e) {
+        $(this).removeClass("ui-state-highlight");
+        $('.overlay').hide();
+        e.stopPropagation();
+    })
 
 });
 
