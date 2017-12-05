@@ -81,12 +81,27 @@ $(document).ready( function(){
     $('.boundary').on("dragover", function(e) {
         $(this).addClass("ui-state-highlight");
         $('.overlay').show();
+        e.preventDefault();
         e.stopPropagation();
     })
     $('.boundary').on("dragleave", function(e) {
         $(this).removeClass("ui-state-highlight");
         $('.overlay').hide();
+        e.preventDefault();
         e.stopPropagation();
+    })
+
+    $('.boundary').on("drop", function(e) {
+        console.log(e);
+        var url = e.originalEvent.dataTransfer.getData('url');
+        if (url) {
+            console.log(url);
+        }
+        $(this).removeClass("ui-state-highlight");
+        $('.overlay').hide();
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
     })
 
 });

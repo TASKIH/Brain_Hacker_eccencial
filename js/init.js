@@ -3,7 +3,9 @@
 
     $('.button-collapse').sideNav();
     $('.parallax').parallax();
-    $('.modal-trigger').leanModal();
+    $('.modal-trigger').on('click',function(){
+        $('.modal').modal();
+    });
     $('#testbutton').on('click',function(){
         $('#nav-mobile1').toggle();
     });
